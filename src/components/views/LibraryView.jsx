@@ -4,9 +4,12 @@ import { Play, Trash2 } from 'lucide-react';
 import useMusicStore from '../../store/useMusicStore';
 
 const LibraryView = () => {
-  const { currentPlaylist, playlists, setCurrentSong, play, removeSongFromPlaylist, songs } = useMusicStore();
+  const { currentPlaylist, playlists, setCurrentSong, play, removeSongFromPlaylist, songs, setQueue } = useMusicStore();
 
   const handleSongClick = (song) => {
+    // Set queue to playlist songs or all songs
+    const queueToSet = currentPlaylist ? currentPlaylist.songs : songs;
+    setQueue(queueToSet);
     setCurrentSong(song);
     play();
   };

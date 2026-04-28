@@ -4,7 +4,7 @@ import { Search, Play } from 'lucide-react';
 import useMusicStore from '../../store/useMusicStore';
 
 const SearchView = () => {
-  const { searchQuery, setSearchQuery, songs, searchSongs, setCurrentSong, play } = useMusicStore();
+  const { searchQuery, setSearchQuery, songs, searchSongs, setCurrentSong, play, setQueue } = useMusicStore();
   const [filteredSongs, setFilteredSongs] = useState([]);
 
   const handleSearch = (query) => {
@@ -18,6 +18,7 @@ const SearchView = () => {
   };
 
   const handleSongClick = (song) => {
+    setQueue(songs);
     setCurrentSong(song);
     play();
   };

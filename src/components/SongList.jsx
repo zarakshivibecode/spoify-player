@@ -5,9 +5,12 @@ import useMusicStore from '../store/useMusicStore';
 import { formatTime } from '../utils';
 
 const SongList = ({ songs, showArtist = false, showAlbum = false }) => {
-  const { currentSong, isPlaying, setCurrentSong, play, pause } = useMusicStore();
+  const { currentSong, isPlaying, setCurrentSong, play, pause, setQueue } = useMusicStore();
 
   const handlePlaySong = (song) => {
+    // Set the queue with all songs and find the index of clicked song
+    setQueue(songs);
+    
     if (currentSong?.id === song.id) {
       isPlaying ? pause() : play();
     } else {

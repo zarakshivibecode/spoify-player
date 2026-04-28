@@ -4,9 +4,10 @@ import { Play } from 'lucide-react';
 import useMusicStore from '../../store/useMusicStore';
 
 const HomeView = () => {
-  const { songs, recentlyPlayed, setCurrentSong, play } = useMusicStore();
+  const { songs, recentlyPlayed, setCurrentSong, play, setQueue } = useMusicStore();
 
   const handleSongClick = (song) => {
+    setQueue(songs);
     setCurrentSong(song);
     play();
   };
