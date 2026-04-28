@@ -1,49 +1,71 @@
-import React, { useEffect } from 'react';
-import { useMusicStore } from '../store';
-import { useAudio } from '../hooks/useAudio';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import useMusicStore from '../store/useMusicStore';
+import useAudioPlayer from '../hooks/useAudioPlayer';
 import Sidebar from './Sidebar';
 import MainContent from './MainContent';
 import Player from './Player';
 
-function App() {
-  const { songs, addSongs } = useMusicStore();
-  const { handleSeek, playNextSong, playPreviousSong } = useAudio();
+const App = () => {
+  const { setSongs } = useMusicStore();
+  useAudioPlayer(); // Initialize audio player
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.code === 'Space') {
-        e.preventDefault();
-        const { isPlaying, setIsPlaying } = useMusicStore.getState();
-        setIsPlaying(!isPlaying);
-      }
-      if (e.code === 'ArrowRight') {
-        playNextSong();
-      }
-      if (e.code === 'ArrowLeft') {
-        playPreviousSong();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  const handleImportClick = async () => {
+    // Since we're in a web environment, we'll simulate file selection
+    // In Electron, this would use the file system API
+    try {
+      // This is a placeholder for Electron integration
+      // In the actual Electron version, this would open a file dialog
+      console.log('Import music feature - ready for Electron integration');
+      
+      // Simulate adding some demo songs for now
+      const demoSongs = [
+        {
+          id: 1,
+          title: 'Sample Song 1',
+          artist: 'Demo Artist',
+          album: 'Demo Album',
+          duration: 180,
+          path: null,
+          coverArt: null
+        },
+        {
+          id: 2,
+          title: 'Sample Song 2',
+          artist: 'Demo Artist',
+          album: 'Demo Album',
+          duration: 220,
+          path: null,
+          coverArt: null
+        }
+      ];
+      
+      // Uncomment to add demo songs
+      // setSongs(demoSongs);
+    } catch (error) {
+      console.error('Error importing music:', error);
+    }
+  };
 
   return (
-    <div className="flex flex-col h-screen bg-spotify-dark text-white overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="flex flex-col h-screen bg-black text-white overflow-hidden"
+    >
       {/* Main Layout */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <Sidebar />
+        <Sidebar onImportClick={handleImportClick} />
 
         {/* Main Content */}
         <MainContent />
       </div>
 
       {/* Player Bar */}
-      <Player onSeek={handleSeek} onNext={playNextSong} onPrev={playPreviousSong} />
-    </div>
+      <Player />
+    </motion.div>
   );
-}
+};
 
 export default App;

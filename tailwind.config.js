@@ -6,17 +6,26 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        spotify: {
-          dark: '#121212',
-          darkGray: '#1DB954',
-          lightGray: '#282828',
-          border: '#404040',
-        }
+        'dark-bg': '#121212',
+        'secondary-bg': '#181818',
+        'spotify-green': '#1DB954',
+        'gray-850': '#2a2a2a',
       },
       animation: {
         'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      }
+        'fade-in': 'fadeIn 0.3s ease-in',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
     },
   },
   plugins: [],
 }
+

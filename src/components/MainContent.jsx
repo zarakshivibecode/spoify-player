@@ -1,19 +1,35 @@
 import React from 'react';
-import { useMusicStore } from '../store';
+import { motion } from 'framer-motion';
+import useMusicStore from '../store/useMusicStore';
 import HomeView from './views/HomeView';
 import SearchView from './views/SearchView';
 import LibraryView from './views/LibraryView';
 
-function MainContent() {
-  const { activeTab } = useMusicStore();
+const MainContent = () => {
+  const { currentView } = useMusicStore();
+
+  const renderView = () => {
+    switch (currentView) {
+      case 'home':
+        return <HomeView />;
+      case 'search':
+        return <SearchView />;
+      case 'library':
+        return <LibraryView />;
+      default:
+        return <HomeView />;
+    }
+  };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gradient-to-b from-spotify-lightGray to-spotify-dark">
-      {activeTab === 'home' && <HomeView />}
-      {activeTab === 'search' && <SearchView />}
-      {activeTab === 'library' && <LibraryView />}
-    </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="flex-1 bg-gradient-to-b from-gray-900 to-black overflow-y-auto"
+    >
+      {renderView()}
+    </motion.div>
   );
-}
+};
 
 export default MainContent;

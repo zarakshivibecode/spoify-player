@@ -1,15 +1,16 @@
 import React, { useRef } from 'react';
+import { motion } from 'framer-motion';
 import { FolderOpen } from 'lucide-react';
-import { useMusicStore } from '../store';
+import useMusicStore from '../store/useMusicStore';
 import { createSongObject, SUPPORTED_FORMATS } from '../utils';
 
-function ImportButton() {
+const ImportButton = () => {
   const fileInputRef = useRef(null);
-  const { addSongs } = useMusicStore();
+  const { setSongs, songs } = useMusicStore();
 
   const handleFolderSelect = async () => {
     try {
-      // Try using the File System Access API
+      // Try using the File System Access API (Chrome/Edge)
       const dirHandle = await window.showDirectoryPicker();
       const files = [];
 
@@ -21,17 +22,7 @@ function ImportButton() {
 
             if (SUPPORTED_FORMATS.includes(ext)) {
               const song = createSongObject(file);
-              // Try to get duration
-              try {
-                const arrayBuffer = await file.arrayBuffer();
-                const audio = new Audio();
-                audio.onloadedmetadata = () => {
-                  song.duration = audio.duration;
-                };
-                audio.src = URL.createObjectURL(new Blob([arrayBuffer], { type: file.type }));
-              } catch (e) {
-                console.warn('Could not extract duration:', e);
-              }
+              song.path = file;
               files.push(song);
             }
           } else if (entry.kind === 'directory') {
@@ -43,56 +34,50 @@ function ImportButton() {
       await processDirectory(dirHandle);
 
       if (files.length > 0) {
-        addSongs(files);
+        setSongs([...songs, ...files]);
         alert(`Imported ${files.length} songs!`);
       } else {
         alert('No supported audio files found in selected folder.');
       }
     } catch (e) {
-      // Fall back to file input
       if (e.name !== 'NotAllowedError') {
-        console.warn('File System Access API not available:', e);
+        console.warn('File System Access API not available, using file input fallback');
       }
       fileInputRef.current?.click();
     }
   };
 
   const handleFileSelect = (event) => {
-    const files = Array.from(event.target.files || []);
-    const songs = files
+    const fileList = event.target.files || [];
+    const newFiles = Array.from(fileList);
+    const importedSongs = newFiles
       .filter((file) => {
         const ext = '.' + file.name.split('.').pop().toLowerCase();
         return SUPPORTED_FORMATS.includes(ext);
       })
-      .map((file) => {
-        const song = createSongObject(file);
-        // Try to get duration
-        const audio = new Audio();
-        audio.onloadedmetadata = () => {
-          song.duration = audio.duration;
-        };
-        audio.src = URL.createObjectURL(file);
-        return song;
-      });
+      .map((file) => createSongObject(file));
 
-    if (songs.length > 0) {
-      addSongs(songs);
-      alert(`Imported ${songs.length} songs!`);
+    if (importedSongs.length > 0) {
+      setSongs([...songs, ...importedSongs]);
+      alert(`Imported ${importedSongs.length} songs!`);
+    } else {
+      alert('No supported audio files found.');
     }
 
-    // Reset input
     event.target.value = '';
   };
 
   return (
     <>
-      <button
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         onClick={handleFolderSelect}
-        className="flex items-center gap-2 px-6 py-3 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform shadow-lg"
+        className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-400 to-green-500 text-black font-bold rounded-full hover:from-green-300 hover:to-green-400 transition-all shadow-lg"
       >
         <FolderOpen className="w-5 h-5" />
-        <span>Import Music Folder</span>
-      </button>
+        <span>Import Music</span>
+      </motion.button>
 
       <input
         ref={fileInputRef}
@@ -104,6 +89,6 @@ function ImportButton() {
       />
     </>
   );
-}
+};
 
 export default ImportButton;

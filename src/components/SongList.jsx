@@ -1,86 +1,73 @@
 import React from 'react';
-import { Play, Pause } from 'lucide-react';
-import { useMusicStore } from '../store';
+import { motion } from 'framer-motion';
+import { Play } from 'lucide-react';
+import useMusicStore from '../store/useMusicStore';
 import { formatTime } from '../utils';
 
-function SongList({ songs, showArtist = false, showAlbum = false }) {
-  const { currentSong, isPlaying, setCurrentSong, setIsPlaying } = useMusicStore();
+const SongList = ({ songs, showArtist = false, showAlbum = false }) => {
+  const { currentSong, isPlaying, setCurrentSong, play, pause } = useMusicStore();
 
   const handlePlaySong = (song) => {
     if (currentSong?.id === song.id) {
-      setIsPlaying(!isPlaying);
+      isPlaying ? pause() : play();
     } else {
       setCurrentSong(song);
-      setIsPlaying(true);
+      play();
     }
   };
 
   return (
-    <div className="space-y-1 border border-spotify-border rounded-lg overflow-hidden">
-      {/* Header */}
-      <div className="hidden md:grid grid-cols-[50px_1fr_200px_100px_100px] bg-spotify-lightGray px-6 py-3 text-sm text-gray-400 border-b border-spotify-border">
-        <div></div>
-        <div>Title</div>
-        {showArtist && <div>Artist</div>}
-        {showAlbum && <div>Album</div>}
-        <div className="text-right">Duration</div>
-      </div>
+    <div className="space-y-2">
+      {songs.map((song, idx) => {
+        const isCurrentSong = currentSong?.id === song.id;
 
-      {/* Songs */}
-      <div className="divide-y divide-spotify-border max-h-96 overflow-y-auto">
-        {songs.map((song, index) => {
-          const isCurrentSong = currentSong?.id === song.id;
-
-          return (
-            <div
-              key={song.id}
-              onClick={() => handlePlaySong(song)}
-              className={`grid grid-cols-[50px_1fr_200px_100px_100px] items-center px-6 py-3 hover:bg-spotify-lightGray cursor-pointer transition-colors ${
-                isCurrentSong ? 'bg-spotify-lightGray' : ''
-              }`}
-            >
-              {/* Play Button */}
-              <div className="flex justify-center">
-                <button className="p-2 hover:bg-spotify-darkGray rounded-full transition-colors text-gray-400 hover:text-white">
-                  {isCurrentSong && isPlaying ? (
-                    <Pause className="w-4 h-4" />
-                  ) : (
-                    <Play className="w-4 h-4" />
-                  )}
-                </button>
+        return (
+          <motion.div
+            key={song.id}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: idx * 0.02 }}
+            whileHover={{ x: 4 }}
+            onClick={() => handlePlaySong(song)}
+            className="group cursor-pointer bg-gray-900/40 backdrop-blur-sm hover:bg-gray-800/60 rounded-lg p-3 flex items-center gap-3 transition-all"
+          >
+            {song.coverArt ? (
+              <img
+                src={song.coverArt}
+                alt={song.title}
+                className="w-12 h-12 rounded object-cover flex-shrink-0"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center flex-shrink-0">
+                <span className="text-lg">♫</span>
               </div>
-
-              {/* Title */}
-              <div className="truncate">
-                <p className={`truncate ${isCurrentSong ? 'text-spotify-darkGray font-bold' : 'text-white'}`}>
-                  {song.title}
-                </p>
-              </div>
-
-              {/* Artist */}
-              {showArtist && (
-                <div className="hidden md:block truncate">
-                  <p className="text-gray-400 text-sm truncate">{song.artist}</p>
-                </div>
-              )}
-
-              {/* Album */}
-              {showAlbum && (
-                <div className="hidden lg:block truncate">
-                  <p className="text-gray-400 text-sm truncate">{song.album}</p>
-                </div>
-              )}
-
-              {/* Duration */}
-              <div className="text-right">
-                <p className="text-gray-400 text-sm">{formatTime(song.duration)}</p>
-              </div>
+            )}
+            
+            <div className="flex-1 min-w-0">
+              <h3 className={`font-semibold truncate ${isCurrentSong ? 'text-green-400' : 'text-white'}`}>
+                {song.title}
+              </h3>
+              <p className="text-sm text-gray-400 truncate">
+                {song.artist}
+                {showAlbum && song.album && ` • ${song.album}`}
+              </p>
             </div>
-          );
-        })}
-      </div>
+
+            <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-sm text-gray-400">{formatTime(song.duration)}</span>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-2 rounded-full bg-green-500 text-black"
+              >
+                <Play className="w-4 h-4 ml-0.5" fill="currentColor" />
+              </motion.button>
+            </div>
+          </motion.div>
+        );
+      })}
     </div>
   );
-}
+};
 
 export default SongList;
