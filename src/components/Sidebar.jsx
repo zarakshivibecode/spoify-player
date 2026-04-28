@@ -1,16 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Home, Search, Music, Heart, Plus, ChevronDown } from 'lucide-react';
 import useMusicStore from '../store/useMusicStore';
 
-const Sidebar = ({ onImportClick }) => {
-  const { playlists, createPlaylist, currentView, setCurrentView, currentPlaylist, setCurrentPlaylist } = useMusicStore();
+const Sidebar = () => {
+  const { playlists, createPlaylist, currentView, setCurrentView, currentPlaylist, setCurrentPlaylist, setSongs } = useMusicStore();
   const [showPlaylistMenu, setShowPlaylistMenu] = useState(false);
+  const fileInputRef = useRef(null);
 
   const handleCreatePlaylist = () => {
     const name = prompt('Playlist name:');
     if (name?.trim()) {
       createPlaylist(name);
+    }
+  };
+
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files || []);
+    
+    // Filter only audio files
+    const audioFiles = files.filter(file => file.type.startsWith('audio/'));
+    
+    if (audioFiles.length === 0) {
+      console.log('⚠️ No audio files found in selection');
+      return;
+    }
+
+    // Convert files to song objects
+    const newSongs = audioFiles.map(file => ({
+      id: `${Date.now()}-${Math.random()}`,
+      title: file.name.replace(/\.[^/.]+$/, ''), // Remove file extension
+      artist: 'Unknown Artist',
+      file: URL.createObjectURL(file)
+    }));
+
+    // Add songs to store
+    setSongs(prev => [...prev, ...newSongs]);
+    
+    console.log(`✅ Imported ${newSongs.length} song(s)`);
+    
+    // Reset input for next selection
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -44,40 +75,44 @@ const Sidebar = ({ onImportClick }) => {
           const isActive = currentView === item.id;
 
           return (
-            <label className="w-full mt-4 cursor-pointer">
-  <motion.div
-    whileHover={{ x: 4 }}
-    whileTap={{ scale: 0.98 }}
-    className="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 transition-colors border border-blue-800/50"
-  >
-    <Plus className="w-5 h-5" />
-    <span className="font-medium">Import Music</span>
-  </motion.div>
-
-  <input
-    type="file"
-    multiple
-    webkitdirectory="true"
-    onChange={(e) => {
-      const files = Array.from(e.target.files);
-      console.log("FILES:", files);
-    }}
-    className="hidden"
-  />
-</label>
+            <motion.button
+              key={item.id}
+              whileHover={{ x: 4 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setCurrentView(item.id)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors border ${
+                isActive
+                  ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                  : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900/30 border-gray-700/30'
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="font-medium">{item.label}</span>
+            </motion.button>
           );
         })}
 
         {/* Import Button */}
-        <motion.button
-          whileHover={{ x: 4 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={onImportClick}
-          className="w-full flex items-center gap-3 px-4 py-3 mt-4 rounded-lg text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 transition-colors border border-blue-800/50"
-        >
-          <Plus className="w-5 h-5" />
-          <span className="font-medium">Import Music</span>
-        </motion.button>
+        <label className="w-full mt-4 cursor-pointer">
+          <motion.div
+            whileHover={{ x: 4 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 transition-colors border border-blue-800/50"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="font-medium">Import Music</span>
+          </motion.div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            webkitdirectory="true"
+            onChange={handleFileSelect}
+            className="hidden"
+            accept="audio/*"
+          />
+        </label>
       </nav>
 
       {/* Playlists Section */}
