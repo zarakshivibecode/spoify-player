@@ -26,8 +26,10 @@ const useAudioPlayer = () => {
 
   // Handle song changes
   useEffect(() => {
-    if (currentSong?.path) {
-      audio.src = currentSong.path;
+    // Try both 'file' (ObjectURL) and 'path' for compatibility
+    const audioSource = currentSong?.file || currentSong?.path;
+    if (audioSource) {
+      audio.src = audioSource;
       if (isPlaying) {
         audio.play().catch(err => console.error('Playback error:', err));
       }
@@ -36,14 +38,15 @@ const useAudioPlayer = () => {
 
   // Handle play/pause
   useEffect(() => {
-    if (!currentSong?.path) return;
+    const audioSource = currentSong?.file || currentSong?.path;
+    if (!audioSource) return;
 
     if (isPlaying) {
       audio.play().catch(err => console.error('Playback error:', err));
     } else {
       audio.pause();
     }
-  }, [isPlaying, currentSong?.path, audio]);
+  }, [isPlaying, currentSong?.file, currentSong?.path, audio]);
 
   // Update current time
   useEffect(() => {

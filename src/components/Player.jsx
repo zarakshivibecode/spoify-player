@@ -114,8 +114,8 @@ const Player = () => {
           )}
           <div className="flex-1 min-w-0">
             <p className="font-bold text-white truncate">{currentSong.title}</p>
-            <p className="text-sm text-gray-400 truncate">{currentSong.artist}</p>
-            <p className="text-xs text-gray-500 truncate">{currentSong.album}</p>
+            <p className="text-sm text-gray-400 truncate">{currentSong.artist || 'Unknown Artist'}</p>
+            {currentSong.album && <p className="text-xs text-gray-500 truncate">{currentSong.album}</p>}
           </div>
         </motion.div>
 

@@ -42,7 +42,9 @@ const Sidebar = () => {
       id: `${Date.now()}-${Math.random()}`,
       title: file.name.replace(/\.[^/.]+$/, ''), // Remove file extension
       artist: 'Unknown Artist',
-      file: URL.createObjectURL(file)
+      album: 'Imported',
+      file: URL.createObjectURL(file),
+      duration: 0
     }));
 
     // Add songs to store - append to existing songs

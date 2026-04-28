@@ -54,7 +54,7 @@ const SongList = ({ songs, showArtist = false, showAlbum = false }) => {
             </div>
 
             <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-              <span className="text-sm text-gray-400">{formatTime(song.duration)}</span>
+              {song.duration > 0 && <span className="text-sm text-gray-400">{formatTime(song.duration)}</span>}
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
