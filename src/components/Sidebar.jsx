@@ -44,20 +44,27 @@ const Sidebar = ({ onImportClick }) => {
           const isActive = currentView === item.id;
 
           return (
-            <motion.button
-              key={item.id}
-              whileHover={{ x: 4 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setCurrentView(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                isActive
-                  ? 'bg-green-500/20 text-green-400'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-900/50'
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span className="font-medium">{item.label}</span>
-            </motion.button>
+            <label className="w-full mt-4 cursor-pointer">
+  <motion.div
+    whileHover={{ x: 4 }}
+    whileTap={{ scale: 0.98 }}
+    className="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 transition-colors border border-blue-800/50"
+  >
+    <Plus className="w-5 h-5" />
+    <span className="font-medium">Import Music</span>
+  </motion.div>
+
+  <input
+    type="file"
+    multiple
+    webkitdirectory="true"
+    onChange={(e) => {
+      const files = Array.from(e.target.files);
+      console.log("FILES:", files);
+    }}
+    className="hidden"
+  />
+</label>
           );
         })}
 
