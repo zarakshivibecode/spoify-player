@@ -90,8 +90,18 @@ const useAudioPlayer = () => {
 
   // Seek
   const seek = (time) => {
-    audio.currentTime = time;
-    setCurrentTime(time);
+    if (audio) {
+      // Pause before seeking to prevent duplicate playback
+      const wasPlaying = !audio.paused;
+      audio.pause();
+      audio.currentTime = time;
+      setCurrentTime(time);
+      
+      // Resume playback if it was playing
+      if (wasPlaying) {
+        audio.play().catch(err => console.error('Playback error:', err));
+      }
+    }
   };
 
   return {

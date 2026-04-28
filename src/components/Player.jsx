@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Shuffle, Maximize2 } from 'lucide-react';
 import useMusicStore from '../store/useMusicStore';
@@ -29,14 +29,49 @@ const Player = () => {
   } = useMusicStore();
 
   const { seek } = useAudioPlayer();
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedTime, setDraggedTime] = useState(0);
+  const progressBarRef = useRef(null);
 
-  const handleProgressClick = (e) => {
-    const bar = e.currentTarget;
-    const rect = bar.getBoundingClientRect();
-    const percent = (e.clientX - rect.left) / rect.width;
-    const newTime = percent * duration;
-    seek(newTime);
+  const handleProgressMouseDown = (e) => {
+    setIsDragging(true);
+    handleProgressUpdate(e);
   };
+
+  const handleProgressMouseMove = (e) => {
+    if (!isDragging) return;
+    handleProgressUpdate(e);
+  };
+
+  const handleProgressMouseUp = (e) => {
+    setIsDragging(false);
+    handleProgressUpdate(e);
+    seek(draggedTime);
+  };
+
+  const handleProgressUpdate = (e) => {
+    if (!progressBarRef.current) return;
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const newTime = percent * duration;
+    setDraggedTime(newTime);
+  };
+
+  // Add global mouse move/up listeners for dragging
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e) => handleProgressMouseMove(e);
+    const handleMouseUp = (e) => handleProgressMouseUp(e);
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, duration]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -72,13 +107,14 @@ const Player = () => {
       {/* Progress Bar */}
       <div className="px-4 py-2 bg-black/40">
         <div
-          onClick={handleProgressClick}
+          ref={progressBarRef}
+          onMouseDown={handleProgressMouseDown}
           className="w-full h-2 bg-gray-700 rounded cursor-pointer hover:h-2.5 transition-all group"
           style={{ pointerEvents: 'auto' }}
         >
           <div
             className="h-full bg-gradient-to-r from-green-400 to-green-500 rounded relative"
-            style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+            style={{ width: `${duration ? ((isDragging ? draggedTime : currentTime) / duration) * 100 : 0}%` }}
           >
             <div
               className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
@@ -86,7 +122,7 @@ const Player = () => {
           </div>
         </div>
         <div className="flex justify-between text-xs text-gray-500 mt-1 px-1">
-          <span>{formatTime(currentTime)}</span>
+          <span>{formatTime(isDragging ? draggedTime : currentTime)}</span>
           <span>{formatTime(duration)}</span>
         </div>
       </div>
