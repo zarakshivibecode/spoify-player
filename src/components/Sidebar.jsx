@@ -4,7 +4,7 @@ import { Home, Search, Music, Heart, Plus, ChevronDown } from 'lucide-react';
 import useMusicStore from '../store/useMusicStore';
 
 const Sidebar = () => {
-  const { playlists, createPlaylist, currentView, setCurrentView, currentPlaylist, setCurrentPlaylist, setSongs } = useMusicStore();
+  const { songs, playlists, createPlaylist, currentView, setCurrentView, currentPlaylist, setCurrentPlaylist, setSongs } = useMusicStore();
   const [showPlaylistMenu, setShowPlaylistMenu] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -18,8 +18,19 @@ const Sidebar = () => {
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files || []);
     
-    // Filter only audio files
-    const audioFiles = files.filter(file => file.type.startsWith('audio/'));
+    console.log(`📂 Total files selected: ${files.length}`);
+    
+    // Audio file extensions that browsers might not recognize with MIME type
+    const audioExtensions = /\.(mp3|wav|ogg|m4a|flac|aac|webm|wma)$/i;
+    
+    // Filter audio files - check both MIME type and file extension
+    const audioFiles = files.filter(file => {
+      const isAudioMime = file.type.startsWith('audio/');
+      const isAudioExt = audioExtensions.test(file.name);
+      return isAudioMime || isAudioExt;
+    });
+    
+    console.log(`🎵 Audio files filtered: ${audioFiles.length}`);
     
     if (audioFiles.length === 0) {
       console.log('⚠️ No audio files found in selection');
@@ -34,10 +45,11 @@ const Sidebar = () => {
       file: URL.createObjectURL(file)
     }));
 
-    // Add songs to store
-    setSongs(prev => [...prev, ...newSongs]);
+    // Add songs to store - append to existing songs
+    setSongs([...songs, ...newSongs]);
     
     console.log(`✅ Imported ${newSongs.length} song(s)`);
+    console.log('📚 Total songs in store:', [...songs, ...newSongs].length);
     
     // Reset input for next selection
     if (fileInputRef.current) {
@@ -110,7 +122,6 @@ const Sidebar = () => {
             webkitdirectory="true"
             onChange={handleFileSelect}
             className="hidden"
-            accept="audio/*"
           />
         </label>
       </nav>
