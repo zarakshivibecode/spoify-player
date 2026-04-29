@@ -61,6 +61,7 @@ const SongList = ({ songs, showArtist = false, showAlbum = false }) => {
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => handlePlaySong(song)}
                 className="p-2 rounded-full bg-green-500 text-black"
               >
                 <Play className="w-4 h-4 ml-0.5" fill="currentColor" />

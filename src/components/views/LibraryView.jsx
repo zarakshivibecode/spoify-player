@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Trash2 } from 'lucide-react';
+import { Play, Trash2, Plus } from 'lucide-react';
 import useMusicStore from '../../store/useMusicStore';
 
 const LibraryView = () => {
-  const { currentPlaylist, playlists, setCurrentSong, play, removeSongFromPlaylist, songs, setQueue } = useMusicStore();
+  const { currentPlaylist, playlists, setCurrentSong, play, removeSongFromPlaylist, songs, setQueue, addSongToPlaylist, setCurrentPlaylist } = useMusicStore();
+  const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
+  const [selectedSongToAdd, setSelectedSongToAdd] = useState(null);
 
   const handleSongClick = (song) => {
     // Set queue to playlist songs or all songs
@@ -12,6 +14,12 @@ const LibraryView = () => {
     setQueue(queueToSet);
     setCurrentSong(song);
     play();
+  };
+
+  const handleAddSongToPlaylist = (song, playlistId) => {
+    addSongToPlaylist(playlistId, song);
+    setShowAddToPlaylist(false);
+    setSelectedSongToAdd(null);
   };
 
   if (!currentPlaylist && playlists.length === 0) {
@@ -42,6 +50,7 @@ const LibraryView = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
+              onClick={() => setCurrentPlaylist(playlist.id)}
               className="group cursor-pointer bg-gray-900/40 backdrop-blur-sm hover:bg-gray-800/60 rounded-lg p-6 transition-all"
             >
               <div className="relative mb-4">
@@ -77,6 +86,59 @@ const LibraryView = () => {
             <h1 className="text-4xl font-bold text-white">{currentPlaylist.name}</h1>
             <p className="text-gray-400 mt-2">{playlistSongs.length} songs</p>
           </div>
+        </div>
+
+        {/* Add Songs to Playlist */}
+        <div className="relative">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowAddToPlaylist(!showAddToPlaylist)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-black rounded-lg font-semibold hover:bg-green-600 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Songs
+          </motion.button>
+
+          {showAddToPlaylist && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute top-12 left-0 bg-gray-800 rounded-lg border border-gray-700 z-10 max-h-96 overflow-y-auto w-80"
+            >
+              {songs.length > 0 ? (
+                songs.map((song) => {
+                  const isAlreadyInPlaylist = playlistSongs.some(s => s.id === song.id);
+                  return (
+                    <motion.div
+                      key={song.id}
+                      whileHover={{ x: 4 }}
+                      className="flex items-center gap-2 px-4 py-2 hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-700 last:border-b-0"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white truncate text-sm">{song.title}</p>
+                        <p className="text-gray-400 truncate text-xs">{song.artist}</p>
+                      </div>
+                      {!isAlreadyInPlaylist ? (
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleAddSongToPlaylist(song, currentPlaylist.id)}
+                          className="p-1 rounded bg-green-500 text-black hover:bg-green-600 transition-colors"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </motion.button>
+                      ) : (
+                        <span className="text-xs text-green-400">✓ Added</span>
+                      )}
+                    </motion.div>
+                  );
+                })
+              ) : (
+                <div className="p-4 text-gray-400 text-sm">No songs to add</div>
+              )}
+            </motion.div>
+          )}
         </div>
       </motion.div>
 
@@ -139,7 +201,7 @@ const LibraryView = () => {
         >
           <div className="text-5xl mb-4">🎶</div>
           <p className="text-lg">No songs in this playlist</p>
-          <p className="text-sm mt-2">Add songs from search or home view</p>
+          <p className="text-sm mt-2">Click "Add Songs" button above to add songs</p>
         </motion.div>
       )}
     </div>
